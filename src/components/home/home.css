@@ -1,0 +1,99 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.counter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.counter p {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.counter button {
+  padding: 10px 20px;
+  font-size: 18px;
+  background-color: lightgray;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.box {
+  width: 200px;
+  height: 200px;
+  display: flex;
+  justify-content: center;
+  align-items:
+}
+
+
+.home-headlines {
+width: 80%;
+text-align: center;
+margin-bottom: 50px;
+}
+
+.headline-list {
+list-style: none;
+padding: 0;
+}
+
+.headline-item {
+margin-bottom: 20px;
+padding: 20px;
+background-color: #ddd;
+border-radius: 5px;
+}
+
+.headline-location {
+font-weight: bold;
+}
+
+.headline-magnitude {
+color: red;
+}
+
+.home-emergency {
+width: 80%;
+text-align: center;
+}
+
+.emergency-list {
+list-style: none;
+padding: 0;
+}
+
+.emergency-item {
+margin-bottom: 20px;
+padding: 20px;
+background-color: red;
+color: #fff;
+border-radius: 5px;
+}
+
+.emergency-location {
+font-weight: bold;
+}
+
+.emergency-magnitude {
+color: #fff;
+}
+
+
+
+

@@ -1,12 +1,15 @@
-
-
-
 import React, { Component } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Home from "./components/Home.mjs";
+import "bootstrap/dist/css/bootstrap.min.css";
+import Home from "./components/home/Home.mjs";
 import Signup from "./components/signup/Signup.mjs";
 import Login from "./components/login/Login.mjs";
 import Dashboard from "./components/dashboard/Dashboard.mjs";
+import Navbar from "./components/navbar/Navbar.mjs";
+import Quake from "./components/quake/Quake.mjs";
+
+
+
 
 class App extends Component {
   render() {
@@ -14,18 +17,22 @@ class App extends Component {
       <div>
           
         <BrowserRouter>
-          <Home />
-          {/* <Signup />
-            <Login />
-            <Dashboard/> */}
+          {/* 
+           <Home />
+            */}
+          <Navbar />
+          
           <Routes>
-            <Route exact path="/" component={Home} />
-            <Route path="/signup" component={Signup} />
-            <Route path="/login" component={Login} />
-            <Route path="/dashboard" component={Dashboard} />
+            <Route exact path="/" element={<Home/> } />
+            <Route path="/latestQuakes" element={<Quake />} />
+            <Route path="/signup" element={<Signup/>} />
+            <Route path="/login" element={<Login/>} />
+            <Route path="/dashboard" element={<Dashboard/>} />
           </Routes>
 
         </BrowserRouter>
+
+        
       </div>
     );
   }
