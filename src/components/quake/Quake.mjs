@@ -1,4 +1,154 @@
 import React, { useState, useEffect } from "react";
+import './quake1.css'
+
+const Quake = () => {
+  const [quakes, setQuakes] = useState([]);
+  const [displayQuakes, setDisplayQuakes] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [magnitudeFilter, setMagnitudeFilter] = useState(null);
+  const [countryFilter, setCountryFilter] = useState('');
+  const [query, setQuery] = useState('');
+  const quakesPerPage = 15;
+
+  useEffect(() => {
+    setLoading(true);
+    fetch("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson")
+      .then(res => res.json())
+      .then(data => {
+        setQuakes(data.features);
+        setTotalPages(Math.ceil(data.features.length / quakesPerPage));
+        setLoading(false);
+      })
+      .catch(error => {
+        console.log(error);
+        setLoading(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    const filteredQuakes = quakes.filter(quake => {
+      if (magnitudeFilter && countryFilter) {
+        return quake.properties.mag > magnitudeFilter && quake.properties.place.includes(countryFilter);
+      } else if (magnitudeFilter) {
+        return quake.properties.mag > magnitudeFilter;
+      } else if (countryFilter) {
+        return quake.properties.place.includes(countryFilter);
+      } else {
+        return true;
+      }
+    });
+    setDisplayQuakes(filteredQuakes.slice(page * quakesPerPage, (page + 1) * quakesPerPage));
+    setTotalPages(Math.ceil(filteredQuakes.length / quakesPerPage));
+  }, [page, quakes, magnitudeFilter, countryFilter]);
+
+  const handleLoadMore = () => {
+    setPage(page + 1);
+  };
+
+  const handlePrevPage = () => {
+    if (page > 0) {
+      setPage(page - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (page < totalPages - 1) {
+      setPage(page + 1);
+    }
+  };
+
+  const handleFilterQuakes = (e) => {
+    e.preventDefault();
+    const mag = Number(e.target.elements.mag.value);
+    if (mag > 0 && mag < 11) {
+      setMagnitudeFilter(mag);
+      setPage(0);
+    } else {
+      setMagnitudeFilter(null);
+      setPage(0);
+    }
+  };
+
+  const handleFilterByCountry = (e) => {
+    setCountryFilter(e.target.value);
+    setPage(0);
+  };
+
+  const handleSearch = (e) => {
+    setQuery(e.target.value);
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    setCountryFilter(query);
+    setPage(0);
+    setQuery('');
+  };
+
+  const handleShowLatest = () => {
+    setMagnitudeFilter(null);
+    setCountryFilter('');
+    fetch("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson")
+      .then(res => res.json())
+      .then(data => {
+        setQuakes(data.features);
+        setTotalPages(Math.ceil(data.features.length / quakesPerPage));
+      })
+      .catch(error => {
+        console.log(error);
+      });
+  };
+return (
+  <div className="quake-container">
+    {loading && <p>Loading...</p>}
+    {!loading && (
+      <div>
+        <h1>Quakes</h1>
+        <form onSubmit={handleFilterQuakes}>
+          <label htmlFor="mag">Filter by magnitude:</label>
+          <input type="number" id="mag" name="mag" min="1" max="10" step="0.1" />
+          <button type="submit">Filter</button>
+        </form>
+        <form onSubmit={handleSearchSubmit}>
+          <label htmlFor="country">Search by country:</label>
+          <input type="text" id="country" name="country" value={query} onChange={handleSearch} />
+          <button type="submit">Search</button>
+        </form>
+        <button onClick={handleShowLatest}>Show latest quakes</button>
+        <select value={countryFilter} onChange={handleFilterByCountry}>
+          <option value="">All countries</option>
+          <option value="Mexico">Mexico</option>
+          <option value="Japan">Japan</option>
+          <option value="Indonesia">Indonesia</option>
+          <option value="Peru">Peru</option>
+          <option value="Chile">Chile</option>
+          <option value="Turkey">Turkiye</option>
+        </select>
+        {displayQuakes.map(quake => (
+          <div key={quake.id}>
+            <h2>{quake.properties.place}</h2>
+            <p>Magnitude: {quake.properties.mag}</p>
+            <p>Date: {new Date(quake.properties.time).toLocaleString()}</p>
+          </div>
+        ))}
+        <button disabled={page === 0} onClick={handlePrevPage}>Previous</button>
+        <button disabled={page === totalPages - 1} onClick={handleNextPage}>Next</button>
+      </div>
+    )}
+  </div>
+);
+
+
+
+};
+
+export default Quake;
+
+/*
+
+import React, { useState, useEffect } from "react";
 import './Quake.css'
 const Quake = () => {
   const [quakes, setQuakes] = useState([]);
@@ -131,7 +281,7 @@ const Quake = () => {
 
 export default Quake;
 
-
+*/
 
 
 

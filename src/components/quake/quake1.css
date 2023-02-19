@@ -1,0 +1,45 @@
+.quake-header {
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  padding: 20px;
+}
+
+.quake-filter-form, .quake-search-form {
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: #eee;
+}
+
+.quake-buttons button[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.quake-buttons button {
+  margin: 10px;
+  padding: 5px 10px;
+  background-color: #ddd;
+  border: none;
+  cursor: pointer;
+}
+
+.quake-select {
+  margin: 10px;
+  padding: 5px 10px;
+  background-color: #ddd;
+  border: none;
+  cursor: pointer;
+}
+
+.quake-item {
+  margin: 20px 0;
+  padding: 10px;
+  background-color: #eee;
+}
+
+.quake-container {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
