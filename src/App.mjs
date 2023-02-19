@@ -9,10 +9,6 @@ import Dashboard from "./components/dashboard/Dashboard.mjs";
 import Navbar from "./components/navbar/Navbar.mjs";
 import Quake from "./components/quake/Quake.mjs";
 
-
-
-
-
 class App extends Component {
   render() {
     return (

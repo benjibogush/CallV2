@@ -1,3 +1,330 @@
+import React, { useState, useEffect, useRef } from "react";
+import "./Quake.css";
+// import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+// import { faSearch } from "@fortawesome/free-solid-svg-icons";
+
+const Quake = () => {
+ const [quakes, setQuakes] = useState([]);
+const [displayQuakes, setDisplayQuakes] = useState([]);
+const [loading, setLoading] = useState(false);
+const [page, setPage] = useState(0);
+const [magnitudeFilter, setMagnitudeFilter] = useState(null);
+const [searchFilter, setSearchFilter] = useState("");
+const [countryFilter, setCountryFilter] = useState("");
+const [cityFilter, setCityFilter] = useState("");
+const [loadMoreOffset, setLoadMoreOffset] = useState(0);
+const [loadingMore, setLoadingMore] = useState(false);
+const [searchQuery, setSearchQuery] = useState('');
+const [totalPages, setTotalPages] = useState(0);
+  const quakesPerPage = 15;
+
+  const containerRef = useRef(null);
+  const observer = useRef(
+    new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setPage((prevPage) => prevPage + 1);
+        }
+      },
+      { threshold: 1 }
+    )
+  );
+
+  useEffect(() => {
+    setLoading(true);
+    fetch(
+      "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson"
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        setQuakes(data.features);
+        setLoading(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (quakes.length === 0) {
+      return;
+    }
+
+    let startIndex = page * quakesPerPage;
+    let endIndex = startIndex + quakesPerPage;
+
+    if (searchFilter || countryFilter || cityFilter || magnitudeFilter) {
+      let filteredQuakes = quakes.filter((quake) => {
+        if (searchFilter) {
+          const searchTerm = searchFilter.toLowerCase();
+          if (
+            quake.properties.place.toLowerCase().includes(searchTerm) ||
+            quake.properties.type.toLowerCase().includes(searchTerm)
+          ) {
+            return true;
+          }
+        }
+
+        if (countryFilter) {
+          const searchTerm = countryFilter.toLowerCase();
+          if (
+            quake.properties.place
+              .split(",")
+              .reverse()[0]
+              .toLowerCase()
+              .includes(searchTerm)
+          ) {
+            return true;
+          }
+        }
+
+        if (cityFilter) {
+          const searchTerm = cityFilter.toLowerCase();
+          if (
+            quake.properties.place.split(",").slice(0, -1).join(",")
+              .toLowerCase()
+              .includes(searchTerm)
+          ) {
+            return true;
+          }
+        }
+
+        if (magnitudeFilter) {
+          return quake.properties.mag >= magnitudeFilter;
+        }
+
+        return false;
+      });
+
+      setTotalPages(Math.ceil(filteredQuakes.length / quakesPerPage));
+      setDisplayQuakes(filteredQuakes.slice(0, endIndex));
+    } else {
+      setTotalPages(Math.ceil(quakes.length / quakesPerPage));
+      setDisplayQuakes(quakes.slice(0, endIndex));
+    }
+  }, [quakes, page, magnitudeFilter, searchFilter, countryFilter, cityFilter]);
+
+  useEffect(() => {
+    if (containerRef.current) {
+      observer.current.observe(containerRef.current);
+    }
+    return () => {
+      if (containerRef.current) {
+        observer.current.unobserve(containerRef.current);
+      }
+    };
+  }, [containerRef]);
+
+  const handleLoadMore = () => {
+    setLoadMoreOffset((prevOffset) => prevOffset + 1);
+  };
+
+    const handleLoadMoreQuakes = () => {
+    if (totalPages === page + 1) return;
+
+    const nextPage = page + 1;
+
+    const nextQuakes = quakes.slice(
+      nextPage * quakesPerPage,
+      (nextPage + 1) * quakesPerPage
+    );
+
+    setDisplayQuakes([...displayQuakes, ...nextQuakes]);
+    setPage(nextPage);
+  };
+
+  const handleSearchFilter = (query) => {
+    const matchedQuakes = quakes.filter((quake) => {
+      if (
+        quake.properties.place.toLowerCase().includes(query.toLowerCase()) ||
+        quake.properties.mag.toString().includes(query)
+      ) {
+        return true;
+      }
+
+      return false;
+    });
+
+    setDisplayQuakes(matchedQuakes);
+    setPage(0);
+    setTotalPages(Math.ceil(matchedQuakes.length / quakesPerPage));
+  };
+
+  const handleFilterByMagnitude = (mag) => {
+    setMagnitudeFilter(mag);
+    setPage(0);
+  };
+
+  return (
+    <div className="quake-container">
+      <div className="quake-header">
+        <h1>Latest Quakes</h1>
+        <div className="quake-filters">
+          <div className="input-group mb-3">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Search by country, city, or magnitude"
+              aria-label="Search by country, city, or magnitude"
+              aria-describedby="basic-addon2"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <div className="input-group-append">
+              <button
+                className="btn btn-outline-secondary"
+                type="button"
+                onClick={() => handleSearchFilter(searchQuery)}
+              >
+                Search
+              </button>
+            </div>
+          </div>
+
+          <div className="quake-magnitude-filter">
+            <div className="btn-group" role="group">
+              <button
+                type="button"
+                className={`btn ${
+                  magnitudeFilter === null ? "btn-primary" : "btn-outline-primary"
+                }`}
+                onClick={() => handleFilterByMagnitude(null)}
+              >
+                All EarthQuakes
+              </button>
+              <button
+                type="button"
+                className={`btn ${
+                  magnitudeFilter === 2 ? "btn-primary" : "btn-outline-primary"
+                }`}
+                onClick={() => handleFilterByMagnitude(2)}
+              >
+                Magnitude 2+
+              </button>
+              <button
+                type="button"
+                className={`btn ${
+                  magnitudeFilter === 4 ? "btn-primary" : "btn-outline-primary"
+                }`}
+                onClick={() => handleFilterByMagnitude(4)}
+              >
+                Magnitude 4+
+              </button>
+              <button
+                type="button"
+                className={`btn ${
+                  magnitudeFilter === 6 ? "btn-primary" : "btn-outline-primary"
+                }`}
+                onClick={() => handleFilterByMagnitude(6)}
+              >
+                Magnitude 6+
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="quake-list">
+  {loading ? (
+    <div className="d-flex justify-content-center">
+      <div className="spinner-border text-primary" role="status">
+        <span className="sr-only">Loading...</span>
+      </div>
+    </div>
+  ) : (
+    displayQuakes.map((quake, index) => (
+      <div key={index} className={`quake-item mb-3 ${quake.properties.mag > 6 ? "quake-item-red" : quake.properties.mag > 4 ? "quake-item-yellow" : "quake-item-green"}`}>
+
+        <p>
+          <strong>Date & Time:</strong>{" "}
+          {new Date(quake.properties.time).toLocaleString()}
+        </p>
+        <p><strong>Location:</strong> {quake.properties.place}</p>
+        <p><strong>Magnitude:</strong> {quake.properties.mag}</p>
+      </div>
+    ))
+  )}
+
+  {loadingMore && (
+    <div className="d-flex justify-content-center my-3">
+      <div className="spinner-border text-primary" role="status">
+        <span className="sr-only">Loading...</span>
+      </div>
+    </div>
+  )}
+</div>
+
+{!quakes && (
+  <div className="pagination d-flex justify-content-center mt-3">
+    <button
+      className="btn btn-secondary mr-3"
+      onClick={handlePrevPage}
+      disabled={page === 0}
+    >
+      Prev
+    </button>
+    <span className="mx-3">Page {page + 1} of {totalPages}</span>
+    <button
+      className="btn btn-secondary ml-3"
+      onClick={handleLoadMore}
+      disabled={loadingMore}
+    >
+      Load More
+    </button>
+  </div>
+)}
+
+{!quakes && (
+  <form className="form-inline my-3">
+    <div className="form-group mr-3">
+      <label htmlFor="country">Country:</label>
+      <input
+        type="text"
+        className="form-control ml-2"
+        id="country"
+        value={searchCountry}
+        onChange={e => setSearchCountry(e.target.value)}
+      />
+    </div>
+    <div className="form-group mr-3">
+      <label htmlFor="city">City:</label>
+      <input
+        type="text"
+        className="form-control ml-2"
+        id="city"
+        value={searchCity}
+        onChange={e => setSearchCity(e.target.value)}
+      />
+    </div>
+    <div className="form-group mr-3">
+      <label htmlFor="magnitude">Magnitude:</label>
+      <input
+        type="number"
+        className="form-control ml-2"
+        id="magnitude"
+        min="0"
+        max="10"
+        step="0.1"
+        value={searchMagnitude}
+        onChange={e => setSearchMagnitude(e.target.value)}
+      />
+    </div>
+    <button type="submit" className="btn btn-primary" onClick={handleSearchFilter}>
+      Search
+    </button>
+  </form>
+)}
+
+</div>
+);
+};
+
+export default Quake;
+
+
+
+
+
+
+/* Last Version : Very good start, search by country feature added
+
 import React, { useState, useEffect } from "react";
 import './quake1.css'
 
@@ -146,7 +473,12 @@ return (
 
 export default Quake;
 
-/*
+*/
+
+
+
+
+/* Previous version
 
 import React, { useState, useEffect } from "react";
 import './Quake.css'
